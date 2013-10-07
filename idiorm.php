@@ -627,8 +627,7 @@
                 $row = $this->_create_instance_from_row($row);
                 if (is_array($row->id())) {
                     $instances[] = $row;
-                }
-                else {
+                } else {
                     $instances[$row->id()] = $row;
                 }
             }
@@ -1088,7 +1087,7 @@
 
         /**
          * Special method to query the table by its primary key.
-         * Does not work with compounf primary keys.
+         * Does not work with compound primary keys.
          */
         public function where_id_is($id) {
             return $this->where($this->_get_id_column_name(), $id);
@@ -1689,8 +1688,7 @@
                     $return[$key] = $this->get($key);
                 }
                 return $return;
-            }
-            else {
+            } else {
                 return $this->get($this->_get_id_column_name());
             }
         }
@@ -1775,8 +1773,7 @@
                 $query = $this->_build_update();
                 if (is_array($this->_get_id_column_name())) {
                     $values = array_merge($values, $this->id());
-                }
-                else {
+                } else {
                     $values[] = $this->id();
                 }
             } else { // INSERT
@@ -1789,7 +1786,8 @@
             // set the ID of this object
             if ($this->_is_new) {
                 $this->_is_new = false;
-                if (is_null($this->id()) && (!is_array($this->_get_id_column_name()))) {
+                if (is_null($this->id()) &&
+                    !is_array($this->_get_id_column_name())) {
                     if(self::$_db[$this->_connection_name]->getAttribute(PDO::ATTR_DRIVER_NAME) == 'pgsql') {
                         $this->_data[$this->_get_id_column_name()] = self::get_last_statement()->fetchColumn();
                     } else {
@@ -1807,13 +1805,14 @@
          */
         public function _add_id_column_conditions(&$query) {
             $query[] = "WHERE";
-            $keys = is_array($this->_get_id_column_name()) ? $this->_get_id_column_name() : array( $this->_get_id_column_name() );
+            $keys = is_array($this->_get_id_column_name()) ?
+                        $this->_get_id_column_name() :
+                        array($this->_get_id_column_name());
             $first = true;
             foreach($keys as $key) {
                 if ($first) {
                     $first = false;
-                }
-                else {
+                } else {
                     $query[] = "AND";
                 }
                 $query[] = $this->_quote_identifier($key);
