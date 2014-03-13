@@ -1,5 +1,6 @@
 <?php
 
+    use Idiorm\ORM;
     // ------------------- //
     // --- Idiorm Demo --- //
     // ------------------- //
@@ -8,9 +9,6 @@
     // and is designed only for the purpose of demonstrating how Idiorm works.
 
     // In case it's not obvious: this is not the correct way to build web applications!
-
-    // Require the idiorm file
-    require_once("idiorm.php");
 
     // Connect to the demo database file
     ORM::configure('sqlite:./demo.sqlite');

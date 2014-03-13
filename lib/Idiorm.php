@@ -38,7 +38,9 @@
      *
      */
 
-    class ORM implements ArrayAccess {
+    namespace Idiorm;
+
+    class ORM implements \ArrayAccess {
 
         // ----------------------- //
         // --- CLASS CONSTANTS --- //
@@ -63,7 +65,7 @@
             'connection_string' => 'sqlite::memory:',
             'id_column' => 'id',
             'id_column_overrides' => array(),
-            'error_mode' => PDO::ERRMODE_EXCEPTION,
+            'error_mode' => \PDO::ERRMODE_EXCEPTION,
             'username' => null,
             'password' => null,
             'driver_options' => null,
@@ -246,14 +248,14 @@
                 !is_object(self::$_db[$connection_name])) {
                 self::_setup_db_config($connection_name);
 
-                $db = new PDO(
+                $db = new \PDO(
                     self::$_config[$connection_name]['connection_string'],
                     self::$_config[$connection_name]['username'],
                     self::$_config[$connection_name]['password'],
                     self::$_config[$connection_name]['driver_options']
                 );
 
-                $db->setAttribute(PDO::ATTR_ERRMODE, self::$_config[$connection_name]['error_mode']);
+                $db->setAttribute(\PDO::ATTR_ERRMODE, self::$_config[$connection_name]['error_mode']);
                 self::set_db($db, $connection_name);
             }
         }
@@ -269,11 +271,11 @@
         }
 
         /**
-         * Set the PDO object used by Idiorm to communicate with the database.
+         * Set the \PDO object used by Idiorm to communicate with the database.
          * This is public in case the ORM should use a ready-instantiated
          * PDO object as its database connection. Accepts an optional string key
          * to identify the connection if multiple connections are used.
-         * @param PDO $db
+         * @param \PDO $db
          * @param string $connection_name Which connection to use
          */
         public static function set_db($db, $connection_name = self::DEFAULT_CONNECTION) {
@@ -324,7 +326,7 @@
          * @return string
          */
         protected static function _detect_identifier_quote_character($connection_name) {
-            switch(self::$_db[$connection_name]->getAttribute(PDO::ATTR_DRIVER_NAME)) {
+            switch(self::$_db[$connection_name]->getAttribute(\PDO::ATTR_DRIVER_NAME)) {
                 case 'pgsql':
                 case 'sqlsrv':
                 case 'dblib':
@@ -347,7 +349,7 @@
          * @return string Limit clause style keyword/constant
          */
         protected static function _detect_limit_clause_style($connection_name) {
-            switch(self::$_db[$connection_name]->getAttribute(PDO::ATTR_DRIVER_NAME)) {
+            switch(self::$_db[$connection_name]->getAttribute(\PDO::ATTR_DRIVER_NAME)) {
                 case 'sqlsrv':
                 case 'dblib':
                 case 'mssql':
@@ -358,12 +360,12 @@
         }
 
         /**
-         * Returns the PDO instance used by the the ORM to communicate with
+         * Returns the \PDO instance used by the the ORM to communicate with
          * the database. This can be called if any low-level DB access is
          * required outside the class. If multiple connections are used,
          * accepts an optional key name for the connection.
          * @param string $connection_name Which connection to use
-         * @return PDO
+         * @return \PDO
          */
         public static function get_db($connection_name = self::DEFAULT_CONNECTION) {
             self::_setup_db($connection_name); // required in case this is called before Idiorm is instantiated
@@ -388,8 +390,8 @@
 
         /**
          * Returns the PDOStatement instance last used by any connection wrapped by the ORM.
-         * Useful for access to PDOStatement::rowCount() or error information
-         * @return PDOStatement
+         * Useful for access to \PDOStatement::rowCount() or error information
+         * @return \PDOStatement
          */
         public static function get_last_statement() {
             return self::$_last_statement;
@@ -593,7 +595,7 @@
          * from your query, and execute it. Will return an array
          * of instances of the ORM class, or an empty array if
          * no rows were returned.
-         * @return array|\IdiormResultSet
+         * @return array|IdiormResultSet
          */
         public function find_many() {
             if(self::$_config[$this->_connection_name]['return_result_sets']) {
@@ -618,7 +620,7 @@
          * Tell the ORM that you are expecting multiple results
          * from your query, and execute it. Will return a result set object
          * containing instances of the ORM class.
-         * @return \IdiormResultSet
+         * @return IdiormResultSet
          */
         public function find_result_set() {
             return new IdiormResultSet($this->_find_many());
@@ -796,7 +798,7 @@
          * @example select_many('column', 'column2', 'column3');
          * @example select_many(array('column', 'column2', 'column3'), 'column4', 'column5');
          * 
-         * @return \ORM
+         * @return ORM
          */
         public function select_many() {
             $columns = func_get_args();
@@ -824,7 +826,7 @@
          * @example select_many_expr('column', 'column2', 'column3')
          * @example select_many_expr(array('column', 'column2', 'column3'), 'column4', 'column5')
          * 
-         * @return \ORM
+         * @return ORM
          */
         public function select_many_expr() {
             $columns = func_get_args();
@@ -1461,7 +1463,7 @@
             $fragment = '';
             if (!is_null($this->_limit) &&
                 self::$_config[$this->_connection_name]['limit_clause_style'] == ORM::LIMIT_STYLE_LIMIT) {
-                if (self::$_db[$this->_connection_name]->getAttribute(PDO::ATTR_DRIVER_NAME) == 'firebird') {
+                if (self::$_db[$this->_connection_name]->getAttribute(\PDO::ATTR_DRIVER_NAME) == 'firebird') {
                     $fragment = 'ROWS';
                 } else {
                     $fragment = 'LIMIT';
@@ -1477,7 +1479,7 @@
         protected function _build_offset() {
             if (!is_null($this->_offset)) {
                 $clause = 'OFFSET';
-                if (self::$_db[$this->_connection_name]->getAttribute(PDO::ATTR_DRIVER_NAME) == 'firebird') {
+                if (self::$_db[$this->_connection_name]->getAttribute(\PDO::ATTR_DRIVER_NAME) == 'firebird') {
                     $clause = 'TO';
                 }
                 return "$clause " . $this->_offset;
@@ -1590,7 +1592,7 @@
             $statement = self::get_last_statement();
 
             $rows = array();
-            while ($row = $statement->fetch(PDO::FETCH_ASSOC)) {
+            while ($row = $statement->fetch(\PDO::FETCH_ASSOC)) {
                 $rows[] = $row;
             }
 
@@ -1738,7 +1740,7 @@
             if ($this->_is_new) {
                 $this->_is_new = false;
                 if (is_null($this->id())) {
-                    if(self::$_db[$this->_connection_name]->getAttribute(PDO::ATTR_DRIVER_NAME) == 'pgsql') {
+                    if(self::$_db[$this->_connection_name]->getAttribute(\PDO::ATTR_DRIVER_NAME) == 'pgsql') {
                         $this->_data[$this->_get_id_column_name()] = self::get_last_statement()->fetchColumn();
                     } else {
                         $this->_data[$this->_get_id_column_name()] = self::$_db[$this->_connection_name]->lastInsertId();
@@ -1784,7 +1786,7 @@
             $placeholders = $this->_create_placeholders($this->_dirty_fields);
             $query[] = "({$placeholders})";
 
-            if (self::$_db[$this->_connection_name]->getAttribute(PDO::ATTR_DRIVER_NAME) == 'pgsql') {
+            if (self::$_db[$this->_connection_name]->getAttribute(\PDO::ATTR_DRIVER_NAME) == 'pgsql') {
                 $query[] = 'RETURNING ' . $this->_quote_identifier($this->_get_id_column_name());
             }
 
@@ -1835,7 +1837,7 @@
 
         public function offsetSet($key, $value) {
             if(is_null($key)) {
-                throw new InvalidArgumentException('You must specify a key/array index.');
+                throw new \InvalidArgumentException('You must specify a key/array index.');
             }
             $this->set($key, $value);
         }
@@ -2012,7 +2014,7 @@
      * A result set class for working with collections of model instances
      * @author Simon Holywell <treffynnon@php.net>
      */
-    class IdiormResultSet implements Countable, IteratorAggregate, ArrayAccess, Serializable {
+    class IdiormResultSet implements \Countable, \IteratorAggregate, \ArrayAccess, \Serializable {
         /**
          * The current result set as an array
          * @var array
@@ -2065,7 +2067,7 @@
          * @return \ArrayIterator
          */
         public function getIterator() {
-            return new ArrayIterator($this->_results);
+            return new \ArrayIterator($this->_results);
         }
 
         /**
@@ -2127,7 +2129,7 @@
          * @example ORM::for_table('Widget')->find_many()->set('field', 'value')->save();
          * @param string $method
          * @param array $params
-         * @return \IdiormResultSet
+         * @return IdiormResultSet
          */
         public function __call($method, $params = array()) {
             foreach($this->_results as $model) {
@@ -2140,4 +2142,4 @@
     /**
      * A placeholder for exceptions eminating from the IdiormString class
      */
-    class IdiormStringException extends Exception {}
+    class IdiormStringException extends \Exception {}
