@@ -236,6 +236,10 @@ class ORM implements \ArrayAccess {
      * @return ORM
      */
     public static function for_table($table_name, $connection_name = self::DEFAULT_CONNECTION) {
+        // For use in the OpenCart
+        if (defined('DB_PREFIX')) {
+            $table_name = DB_PREFIX . $table_name;
+        }
         self::_setup_db($connection_name);
         return new self($table_name, array(), $connection_name);
     }
